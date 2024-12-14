@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Attendance Logs</title>
+</head>
+<body>
+    <h1>Attendance Logs</h1>
+    {% if logs %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>In Time</th>
+                    <th>Out Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                    <tr>
+                        <td>{{ log.uid }}</td>
+                        <td>{{ log.name }}</td>
+                        <td>{{ log.in_time }}</td>
+                        <td>{{ log.out_time|default:"N/A" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No attendance records found.</p>
+    {% endif %}
+</body>
+</html>

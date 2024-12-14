@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register User</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+        }
+        video, img {
+            border: 1px solid black;
+            margin: 10px 0;
+            width: 400px;
+            height: auto;
+        }
+        .hidden {
+            display: none;
+        }
+        .messages {
+            margin: 10px 0;
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Register User</h1>
+        <form id="register-form" method="POST">
+            {% csrf_token %}
+            <input type="text" name="uid" placeholder="Enter User ID" required><br>
+            <input type="text" name="name" placeholder="Enter Name" required><br>
+            <input type="hidden" id="frame-input" name="frame">
+            <div id="video-container">
+                <video id="video" autoplay></video>
+            </div>
+            <img id="captured-image" class="hidden" alt="Captured Image">
+            <canvas id="canvas" class="hidden"></canvas>
+            <div>
+                <button type="button" id="capture-btn">Capture</button>
+                <button type="button" id="retake-btn" class="hidden">Retake</button>
+                <button type="submit">Submit</button>
+            </div>
+        </form>
+
+        <!-- Display messages -->
+        <div class="messages">
+            {% if error %}
+                <p class="error">{{ error }}</p>
+            {% endif %}
+            {% if messages %}
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById("video");
+        const canvas = document.getElementById("canvas");
+        const captureBtn = document.getElementById("capture-btn");
+        const retakeBtn = document.getElementById("retake-btn");
+        const frameInput = document.getElementById("frame-input");
+        const videoContainer = document.getElementById("video-container");
+        const capturedImage = document.getElementById("captured-image");
+
+        // Access webcam
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(error => {
+                console.error("Error accessing webcam:", error);
+            });
+
+        // Capture frame
+        captureBtn.addEventListener("click", () => {
+            const context = canvas.getContext("2d");
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const frameData = canvas.toDataURL("image/jpeg");
+            frameInput.value = frameData;
+
+            // Hide live video and show captured image
+            video.classList.add("hidden");
+            videoContainer.classList.add("hidden");
+            capturedImage.src = frameData;
+            capturedImage.classList.remove("hidden");
+            retakeBtn.classList.remove("hidden");
+
+            alert("Image captured!");
+        });
+
+        // Retake frame
+        retakeBtn.addEventListener("click", () => {
+            // Show live video again
+            video.classList.remove("hidden");
+            videoContainer.classList.remove("hidden");
+            capturedImage.classList.add("hidden");
+            retakeBtn.classList.add("hidden");
+
+            alert("You can retake the image.");
+        });
+    </script>
+</body>
+</html>

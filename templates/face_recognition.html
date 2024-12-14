@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Face Recognition</title>
+    <script>
+        let videoElement = null;
+
+        function startCamera() {
+            videoElement = document.getElementById("video");
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then((stream) => {
+                    videoElement.srcObject = stream;
+                })
+                .catch((error) => {
+                    alert("Error accessing webcam: " + error);
+                });
+        }
+
+        async function sendFrame() {
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
+            context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+            const frame = canvas.toDataURL("image/jpeg");
+            const response = await fetch("/process-frame/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}",
+                },
+                body: JSON.stringify({ frame }),
+            });
+
+            const result = await response.json();
+            document.getElementById("status").innerText = result.message;
+        }
+
+        setInterval(sendFrame, 2000);
+    </script>
+</head>
+<body onload="startCamera()">
+    <h1>Face Recognition</h1>
+    <video id="video" autoplay></video>
+    <p id="status">Initializing...</p>
+</body>
+</html>
